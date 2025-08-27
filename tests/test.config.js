@@ -29,7 +29,8 @@ const createTestDog = async (ownerId, dogData = {}) => {
     const defaultDog = {
         name: 'Buddy',
         description: 'A friendly golden retriever',
-        owner: ownerId
+        owner: ownerId,
+        imageUrl: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=300&fit=crop'
     };
 
     const dog = new Dog({ ...defaultDog, ...dogData });
@@ -37,8 +38,22 @@ const createTestDog = async (ownerId, dogData = {}) => {
     return dog;
 };
 
+// Helper function to create multiple test dogs for testing pagination
+const createMultipleTestDogs = async (ownerId, count = 5) => {
+    const dogs = [];
+    for (let i = 0; i < count; i++) {
+        const dog = await createTestDog(ownerId, {
+            name: `TestDog${i + 1}`,
+            description: `Test dog number ${i + 1} for pagination testing`,
+        });
+        dogs.push(dog);
+    }
+    return dogs;
+};
+
 module.exports = {
     cleanDatabase,
     createTestUser,
-    createTestDog
+    createTestDog,
+    createMultipleTestDogs
 };

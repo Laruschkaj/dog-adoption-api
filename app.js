@@ -56,6 +56,9 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files
+app.use(express.static('public'));
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/dogs', dogRoutes);

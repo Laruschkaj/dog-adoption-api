@@ -3,15 +3,18 @@ require('dotenv').config();
 
 const connectDB = async () => {
     try {
-        const dbName = process.env.NODE_ENV === 'test' ? process.env.TEST_DB_NAME : process.env.DB_NAME;
-        const mongoURI = process.env.MONGODB_URI.replace('dog-adoption-dev', dbName);
+        // Determine which database to use based on NODE_ENV
+        const dbName = process.env.NODE_ENV === 'test' ? 'dog-adoption-test' : 'dog-adoption-dev';
+
+        // Build the MongoDB URI with the correct database name
+        const mongoURI = process.env.MONGODB_URI;
 
         const conn = await mongoose.connect(mongoURI, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
         });
 
-        console.log(`🐕 MongoDB Connected: ${conn.connection.host} - Database: ${dbName}`);
+        console.log(`MongoDB Connected: ${conn.connection.host} - Database: ${conn.connection.name}`);
 
         // Handle connection events
         mongoose.connection.on('error', (err) => {

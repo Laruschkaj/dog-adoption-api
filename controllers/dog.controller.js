@@ -94,7 +94,8 @@ const adoptDog = async (req, res) => {
 
         // Adopt the dog
         await dog.adoptDog(req.user.id, thankYouMessage || '');
-        await dog.populate(['owner', 'adoptedBy'], 'username');
+        await dog.populate('owner', 'username');
+        await dog.populate('adoptedBy', 'username');
 
         res.json({
             success: true,

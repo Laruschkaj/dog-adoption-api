@@ -13,6 +13,17 @@ const dogSchema = new mongoose.Schema({
         trim: true,
         maxlength: [500, 'Description cannot exceed 500 characters']
     },
+    imageUrl: {
+        type: String,
+        trim: true,
+        validate: {
+            validator: function (v) {
+                if (!v) return true; // Allow empty
+                return /^https?:\/\/.+/.test(v);
+            },
+            message: 'Image URL must be a valid HTTP/HTTPS URL'
+        }
+    },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
