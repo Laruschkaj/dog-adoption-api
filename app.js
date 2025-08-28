@@ -3,8 +3,10 @@ const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swaggerConfig');
 const connectDB = require('./db');
-const User = require('./models/user.model');
-const Dog = require('./models/dog.model');
+
+// Import the models using your models/index.js file
+const { User, Dog } = require('./models');
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -104,15 +106,14 @@ app.get('/dogs', auth, async (req, res) => {
         let dogs;
         let title = 'All Dogs';
 
-        // Add a case for each filter
         if (filter === 'registered') {
             dogs = await Dog.find({ owner: req.user.userId }).populate('owner', 'username');
             title = 'My Registered Dogs';
         } else if (filter === 'adopted') {
-            dogs = await Dog.find({ isAdopted: true }).populate('owner', 'username');
+            dogs = await Dog.find({ 'adoptedBy': { '$exists': true } }).populate('owner', 'username').populate('adoptedBy', 'username');
             title = 'Adopted Dogs';
         } else { // 'all' filter
-            dogs = await Dog.find().populate('owner', 'username');
+            dogs = await Dog.find().populate('owner', 'username').populate('adoptedBy', 'username');
         }
 
         // Pass flash messages to the view if they exist
@@ -147,6 +148,7 @@ app.post('/register-dog', auth, async (req, res) => {
             description,
             imageUrl,
             owner: ownerId,
+            isAdopted: false, // Ensure this is always set for consistency
         });
 
         await newDog.save();
@@ -161,6 +163,7 @@ app.post('/adopt-dog/:id', auth, async (req, res) => {
     try {
         const dogId = req.params.id;
         const userId = req.user.userId;
+        const { thankYouMessage } = req.body;
 
         const dog = await Dog.findById(dogId);
 
@@ -168,17 +171,20 @@ app.post('/adopt-dog/:id', auth, async (req, res) => {
             return res.redirect('/dogs?error=Dog not found.');
         }
 
-        // This is a sanity check to prevent any accidental re-adoption
-        if (dog.isAdopted) {
+        const isAdopted = dog.isAdopted || dog.status === 'adopted';
+        if (isAdopted) {
             return res.redirect('/dogs?error=Dog has already been adopted.');
         }
 
-        // Check if the user is the owner
         if (dog.owner.toString() === userId) {
             return res.redirect('/dogs?error=You cannot adopt a dog you registered.');
         }
 
         dog.isAdopted = true;
+        dog.status = 'adopted';
+        dog.adoptedBy = userId;
+        dog.thankYouMessage = thankYouMessage;
+        dog.adoptedAt = new Date(); // Add timestamp for adopted at
         await dog.save();
 
         res.redirect('/dogs?message=Dog adopted successfully!');
@@ -199,13 +205,13 @@ app.post('/remove-dog/:id', auth, async (req, res) => {
             return res.redirect('/dogs?error=Dog not found.');
         }
 
-        // Check if the user is the owner
         if (dog.owner.toString() !== userId) {
             return res.redirect('/dogs?error=You do not have permission to remove this dog.');
         }
 
-        // If the dog is already adopted, prevent removal
-        if (dog.isAdopted) {
+        // Handle both `isAdopted` and `status` properties
+        const isAdopted = dog.isAdopted || dog.status === 'adopted';
+        if (isAdopted) {
             return res.redirect('/dogs?error=Cannot remove an adopted dog.');
         }
 

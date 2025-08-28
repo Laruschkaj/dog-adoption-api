@@ -3,35 +3,45 @@ const mongoose = require('mongoose');
 const dogSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Dog name is required'],
-        trim: true,
+        required: true,
     },
     description: {
         type: String,
-        required: [true, 'Dog description is required'],
-        trim: true,
+        required: true,
     },
-    // The owner is a reference to the User model, linking a dog to a specific user
+    imageUrl: {
+        type: String,
+        default: '', // Default to an empty string if no image URL is provided
+    },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
     },
-    // This flag determines if the dog has been adopted
     isAdopted: {
         type: Boolean,
         default: false,
     },
-    // An image URL for the dog's photo
-    imageUrl: {
+    adoptedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        // This field is optional and only exists if the dog is adopted
+    },
+    status: {
         type: String,
-        required: false,
+        enum: ['available', 'adopted'],
+        default: 'available',
     },
-    // The date the dog was registered
-    registeredAt: {
+    thankYouMessage: {
+        type: String,
+        default: '',
+    },
+    adoptedAt: {
         type: Date,
-        default: Date.now,
-    },
+    }
+}, {
+    timestamps: true // Automatically adds createdAt and updatedAt fields
 });
 
-module.exports = mongoose.model('Dog', dogSchema);
+const Dog = mongoose.model('Dog', dogSchema);
+module.exports = Dog;
