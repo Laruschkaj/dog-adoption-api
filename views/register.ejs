@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Dog Adoption</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f2eb;
+        }
+    </style>
+</head>
+
+<body class="bg-[#f7f2eb] min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-8 rounded-3xl shadow-lg max-w-md w-full">
+        <div class="flex items-center justify-center mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#6B8E23" class="w-10 h-10">
+                <path
+                    d="M12 2A10 10 0 0 0 2 12c0 4.42 3.58 8 8 8h4c4.42 0 8-3.58 8-8a10 10 0 0 0-10-10zm-1.5 13a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+                <path
+                    d="M12 2c-3.136 0-5.83 1.74-7.23 4.316a.5.5 0 0 0 .89.44C5.975 4.67 8.52 3 12 3s6.025 1.67 6.34 3.756a.5.5 0 0 0 .89-.44C17.83 3.74 15.136 2 12 2zm-1.5 13a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+            </svg>
+            <h1 class="text-3xl font-bold text-[#3d5a41] ml-2">Dog Adoption</h1>
+        </div>
+        <h2 class="text-2xl font-semibold text-[#3d5a41] mb-2 text-center">Register an account</h2>
+        <p class="text-sm text-red-500 mb-4 text-center">
+            <%= typeof error !=='undefined' ? error : '' %>
+        </p>
+        <form action="/register" method="POST" class="space-y-4">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                <input type="text" id="username" name="username" required
+                    class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#99a65d] focus:border-[#99a65d] sm:text-sm">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" name="password" required
+                    class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#99a65d] focus:border-[#99a65d] sm:text-sm">
+            </div>
+            <button type="submit"
+                class="w-full bg-[#99a65d] hover:bg-[#838e51] text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#99a65d] focus:ring-offset-2">
+                Register
+            </button>
+        </form>
+    </div>
+</body>
+
+</html>

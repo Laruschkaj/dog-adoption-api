@@ -49,16 +49,6 @@ const sampleDogs = [
         name: "Daisy",
         description: "Calm and loving Beagle who enjoys quiet evenings and gentle walks in the park.",
         imageUrl: "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?w=400&h=300&fit=crop"
-    },
-    {
-        name: "Rocky",
-        description: "Strong and brave Rottweiler mix. Great guard dog but also very affectionate with family.",
-        imageUrl: "https://images.unsplash.com/photo-1518717758536-85ae29035b6d?w=400&h=300&fit=crop"
-    },
-    {
-        name: "Molly",
-        description: "Adorable Cocker Spaniel who loves attention and belly rubs. Very social and friendly.",
-        imageUrl: "https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=400&h=300&fit=crop"
     }
 ];
 
@@ -79,28 +69,27 @@ const sampleUsers = [
 
 async function seedDatabase() {
     try {
-        console.log('🔄 Starting database seed...');
+        console.log('Starting database seed...');
 
         // Clear existing data
-        console.log('🧹 Clearing existing data...');
+        console.log('Clearing existing data...');
         await User.deleteMany({});
         await Dog.deleteMany({});
 
-        // Create users
-        console.log('👥 Creating sample users...');
+        // Create users with properly hashed passwords
+        console.log('Creating sample users...');
         const users = [];
         for (const userData of sampleUsers) {
-            const hashedPassword = await bcrypt.hash(userData.password, 12);
             const user = new User({
                 username: userData.username,
-                password: hashedPassword
+                password: userData.password // The pre hook will hash this
             });
             await user.save();
             users.push(user);
         }
 
         // Create dogs
-        console.log('🐕 Creating sample dogs...');
+        console.log('Creating sample dogs...');
         const dogsPerUser = Math.ceil(sampleDogs.length / users.length);
 
         for (let i = 0; i < sampleDogs.length; i++) {
@@ -118,7 +107,7 @@ async function seedDatabase() {
         }
 
         // Adopt a few dogs to show the adoption feature
-        console.log('❤️ Creating some adoptions...');
+        console.log('Creating some adoptions...');
         const allDogs = await Dog.find();
         if (allDogs.length >= 2 && users.length >= 2) {
             // User 2 adopts a dog from User 1
@@ -130,18 +119,18 @@ async function seedDatabase() {
             }
         }
 
-        console.log('✅ Database seeded successfully!');
-        console.log(`📊 Created ${users.length} users and ${sampleDogs.length} dogs`);
-        console.log('\n🔐 Sample login credentials:');
+        console.log('Database seeded successfully!');
+        console.log(`Created ${users.length} users and ${sampleDogs.length} dogs`);
+        console.log('\nSample login credentials:');
         sampleUsers.forEach(user => {
             console.log(`   Username: ${user.username}, Password: ${user.password}`);
         });
 
     } catch (error) {
-        console.error('❌ Seed failed:', error);
+        console.error('Seed failed:', error);
     } finally {
         await mongoose.connection.close();
-        console.log('🔌 Database connection closed');
+        console.log('Database connection closed');
         process.exit(0);
     }
 }

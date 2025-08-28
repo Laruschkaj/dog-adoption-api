@@ -1,53 +1,35 @@
+// models/user.model.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
     username: {
         type: String,
         required: [true, 'Username is required'],
         unique: true,
-        trim: true,
-        minlength: [3, 'Username must be at least 3 characters long'],
-        maxlength: [30, 'Username cannot exceed 30 characters']
+        trim: true
     },
     password: {
         type: String,
-        required: [true, 'Password is required'],
-        minlength: [6, 'Password must be at least 6 characters long']
-    }
-}, {
-    timestamps: true,
-    toJSON: {
-        transform: function (doc, ret) {
-            delete ret.password;
-            return ret;
-        }
+        required: [true, 'Password is required']
     }
 });
 
-// Hash password before saving
-userSchema.pre('save', async function (next) {
-    // Only hash the password if it has been modified (or is new)
-    if (!this.isModified('password')) return next();
-
-    try {
-        // Hash password with cost of 12
-        const hashedPassword = await bcrypt.hash(this.password, 12);
-        this.password = hashedPassword;
-        next();
-    } catch (error) {
-        next(error);
+// Hash password before saving the user document
+UserSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) {
+        return next();
     }
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
 });
 
-// Instance method to check password
-userSchema.methods.comparePassword = async function (candidatePassword) {
-    return bcrypt.compare(candidatePassword, this.password);
+// Method to compare passwords
+UserSchema.methods.matchPassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Static method to find user by username
-userSchema.statics.findByUsername = function (username) {
-    return this.findOne({ username });
-};
+const User = mongoose.model('User', UserSchema);
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = User;

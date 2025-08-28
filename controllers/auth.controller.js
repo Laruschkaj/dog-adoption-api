@@ -1,145 +1,89 @@
+// controllers/auth.controller.js
 const jwt = require('jsonwebtoken');
-const User = require('../models/user.model');
+const { User } = require('../models');
 
-// Generate JWT token
-const generateToken = (user) => {
-    return jwt.sign(
-        {
-            id: user._id,
-            username: user.username
-        },
-        process.env.JWT_SECRET,
-        {
-            expiresIn: '24h'
-        }
-    );
+const generateToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
+        expiresIn: '24h'
+    });
 };
 
-// @desc    Register new user
-// @route   POST /api/auth/register
-// @access  Public
-const registerUser = async (req, res) => {
-    try {
-        const { username, password } = req.body;
+/**
+ * @desc    Register a new user
+ * @route   POST /api/auth/register
+ * @access  Public
+ */
+exports.register = async (req, res) => {
+    const { username, password } = req.body;
 
-        // Validation
-        if (!username || !password) {
-            return res.status(400).json({
-                success: false,
-                message: 'Username and password are required'
-            });
-        }
-
-        // Check if user already exists
-        const existingUser = await User.findByUsername(username);
-        if (existingUser) {
-            return res.status(409).json({
-                success: false,
-                message: 'Username already exists'
-            });
-        }
-
-        // Create user
-        const user = new User({
-            username: username.toLowerCase().trim(),
-            password
+    if (!username || !password) {
+        return res.status(400).json({
+            success: false,
+            message: 'Username and password are required'
         });
+    }
 
-        await user.save();
+    try {
+        const userExists = await User.findOne({ username });
+        if (userExists) {
+            return res.status(409).json({ success: false, message: 'Username already exists' });
+        }
 
-        // Generate token
-        const token = generateToken(user);
+        const newUser = await User.create({ username, password });
+        const token = generateToken(newUser._id);
 
         res.status(201).json({
             success: true,
             message: 'User registered successfully',
             data: {
+                token,
                 user: {
-                    id: user._id,
-                    username: user.username,
-                    createdAt: user.createdAt
-                },
-                token
+                    id: newUser._id,
+                    username: newUser.username
+                }
             }
         });
-
     } catch (error) {
-        console.error('Registration error:', error);
-
-        if (error.name === 'ValidationError') {
-            const errors = Object.values(error.errors).map(err => err.message);
-            return res.status(400).json({
-                success: false,
-                message: 'Validation error',
-                errors
-            });
-        }
-
-        res.status(500).json({
-            success: false,
-            message: 'Server error during registration'
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
-const loginUser = async (req, res) => {
+/**
+ * @desc    Authenticate user and get token
+ * @route   POST /api/auth/login
+ * @access  Public
+ */
+exports.login = async (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({
+            success: false,
+            message: 'Username and password are required'
+        });
+    }
+
     try {
-        const { username, password } = req.body;
-
-        // Validation
-        if (!username || !password) {
-            return res.status(400).json({
-                success: false,
-                message: 'Username and password are required'
-            });
+        const user = await User.findOne({ username });
+        if (!user || !(await user.matchPassword(password))) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
-        // Find user
-        const user = await User.findByUsername(username.toLowerCase().trim());
-        if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid credentials'
-            });
-        }
+        const token = generateToken(user._id);
 
-        // Check password
-        const isPasswordValid = await user.comparePassword(password);
-        if (!isPasswordValid) {
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid credentials'
-            });
-        }
-
-        // Generate token
-        const token = generateToken(user);
-
-        res.json({
+        res.status(200).json({
             success: true,
-            message: 'Login successful',
+            message: 'Logged in successfully',
             data: {
+                token,
                 user: {
                     id: user._id,
                     username: user.username
-                },
-                token
+                }
             }
         });
-
     } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error during login'
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-module.exports = {
-    registerUser,
-    loginUser
-};

@@ -1,13 +1,19 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
+
+// Load environment variables based on NODE_ENV
+if (process.env.NODE_ENV === 'test') {
+    require('dotenv').config({ path: '.env.test' });
+} else {
+    require('dotenv').config();
+}
 
 const connectDB = async () => {
     try {
-        // Determine which database to use based on NODE_ENV
-        const dbName = process.env.NODE_ENV === 'test' ? 'dog-adoption-test' : 'dog-adoption-dev';
-
-        // Build the MongoDB URI with the correct database name
         const mongoURI = process.env.MONGODB_URI;
+
+        if (!mongoURI) {
+            throw new Error('MONGODB_URI is not defined in environment variables');
+        }
 
         const conn = await mongoose.connect(mongoURI, {
             useNewUrlParser: true,

@@ -1,6 +1,9 @@
+// routes/dog.routes.js
 const express = require('express');
+const router = express.Router();
 const { authenticateToken } = require('../middlewares/auth.middleware');
 const {
+    getAllDogs,
     registerDog,
     adoptDog,
     removeDog,
@@ -8,9 +11,10 @@ const {
     getAdoptedDogs
 } = require('../controllers/dog.controller');
 
-const router = express.Router();
+// Public route to get all dogs with pagination/filtering
+router.get('/', getAllDogs);
 
-// Apply authentication middleware to all routes
+// Private routes (require authentication)
 router.use(authenticateToken);
 
 // @route   POST /api/dogs
@@ -29,12 +33,12 @@ router.put('/:id/adopt', adoptDog);
 router.delete('/:id', removeDog);
 
 // @route   GET /api/dogs/registered
-// @desc    Get user's registered dogs
+// @desc    List dogs registered by the authenticated user
 // @access  Private
 router.get('/registered', getRegisteredDogs);
 
 // @route   GET /api/dogs/adopted
-// @desc    Get user's adopted dogs
+// @desc    List dogs adopted by the authenticated user
 // @access  Private
 router.get('/adopted', getAdoptedDogs);
 

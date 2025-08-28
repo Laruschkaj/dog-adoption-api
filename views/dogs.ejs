@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %> | Dog Adoption
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f2eb;
+        }
+
+        /* Flexbox setup to push footer to the bottom */
+        .flex-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body class="flex-wrapper">
+    <!-- Header -->
+    <header class="w-full py-4 px-8 flex justify-between items-center bg-white shadow-md">
+        <div class="flex items-center space-x-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#6B8E23" class="w-8 h-8">
+                <path
+                    d="M12 2A10 10 0 0 0 2 12c0 4.42 3.58 8 8 8h4c4.42 0 8-3.58 8-8a10 10 0 0 0-10-10zm-1.5 13a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+                <path
+                    d="M12 2c-3.136 0-5.83 1.74-7.23 4.316a.5.5 0 0 0 .89.44C5.975 4.67 8.52 3 12 3s6.025 1.67 6.34 3.756a.5.5 0 0 0 .89-.44C17.83 3.74 15.136 2 12 2zm-1.5 13a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+            </svg>
+            <h1 class="text-2xl font-bold text-[#3d5a41]">Dog Adoption</h1>
+        </div>
+        <nav class="space-x-4 flex items-center">
+            <a href="/register-dog"
+                class="bg-[#99a65d] hover:bg-[#838e51] text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#99a65d] focus:ring-offset-2">Register
+                a Dog</a>
+            <form action="/logout" method="POST">
+                <button type="submit" class="text-[#3d5a41] hover:text-red-500 font-medium">Log Out</button>
+            </form>
+        </nav>
+    </header>
+
+    <!-- Message pop-up -->
+    <% if (message || error) { %>
+        <div id="message-container"
+            class="fixed top-4 left-1/2 -translate-x-1/2 w-full max-w-sm z-50 transition-opacity duration-300 ease-in-out">
+            <div
+                class="bg-white p-4 rounded-xl shadow-lg border-l-4 <%= message ? 'border-green-500' : 'border-red-500' %> flex items-start space-x-4">
+                <p class="text-sm font-medium flex-grow text-gray-800">
+                    <%= message ? message : error %>
+                </p>
+                <button
+                    onclick="document.getElementById('message-container').style.opacity = '0'; setTimeout(() => document.getElementById('message-container').remove(), 300);"
+                    class="text-gray-400 hover:text-gray-600 transition duration-150 ease-in-out">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <% } %>
+
+            <!-- Main Content -->
+            <main class="container mx-auto p-8">
+                <h2 class="text-4xl font-extrabold text-[#3d5a41] text-center mb-4">
+                    <%= title %>
+                </h2>
+
+                <!-- Filter Buttons -->
+                <div class="flex justify-center space-x-4 mb-8">
+                    <a href="/dogs?filter=all"
+                        class="font-medium px-4 py-2 rounded-full transition duration-300 <%= currentFilter === 'all' ? 'bg-[#99a65d] text-white shadow-md' : 'text-[#3d5a41] hover:bg-gray-200' %>">All
+                        Dogs</a>
+                    <a href="/dogs?filter=registered"
+                        class="font-medium px-4 py-2 rounded-full transition duration-300 <%= currentFilter === 'registered' ? 'bg-[#99a65d] text-white shadow-md' : 'text-[#3d5a41] hover:bg-gray-200' %>">My
+                        Registered Dogs</a>
+                    <a href="/dogs?filter=adopted"
+                        class="font-medium px-4 py-2 rounded-full transition duration-300 <%= currentFilter === 'adopted' ? 'bg-[#99a65d] text-white shadow-md' : 'text-[#3d5a41] hover:bg-gray-200' %>">Adopted
+                        Dogs</a>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <% if (dogs.length> 0) { %>
+                        <% const
+                            defaultIcons=[ '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#99a65d" stroke-width="2"><path d="M12 2C8.134 2 5 5.134 5 9a7 7 0 001.35 4.09l-.49 1.13c-.15.35.05.74.42.85l1.37.4a.5.5 0 01.3-.08l.74-.2c.35-.1.65-.4.7-.75l.1-.55c.03-.18.04-.37.04-.56A7 7 0 0012 16a7 7 0 005.12-2.14l.02.01.52.7a.5.5 0 01-.08.6l-1.12.52c-.35.15-.47.54-.26.88l.68 1.1c.21.35.6.45.95.23l2.25-1.4a7 7 0 001.35-4.09c0-3.866-3.134-7-7-7zM12 11a3 3 0 100-6 3 3 0 000 6z" fill="#D3D3C9"/><circle cx="12" cy="8" r="3" stroke="#99a65d" stroke-width="1.5"/><path d="M10 16a2 2 0 10-4 0M14 16a2 2 0 104 0" stroke="#99a65d" stroke-width="1.5"/></svg>'
+                            , '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#838e51" stroke-width="2"><path d="M12 2A10 10 0 002 12c0 4.42 3.58 8 8 8h4c4.42 0 8-3.58 8-8a10 10 0 00-10-10zM12 11a3 3 0 100-6 3 3 0 000 6z" fill="#D3D3C9"/><path d="M12 11a3 3 0 100-6 3 3 0 000 6z" stroke="#838e51"/><path d="M8 17a4 4 0 018 0" stroke="#838e51"/><path d="M9 13a1 1 0 102 0 1 1 0 00-2 0zM13 13a1 1 0 102 0 1 1 0 00-2 0z" stroke="#838e51" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+                            , '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#3d5a41" stroke-width="2"><path d="M12 2C8.134 2 5 5.134 5 9a7 7 0 001.35 4.09l.49 1.13c.15.35.05.74-.42.85l-1.37.4a.5.5 0 01-.3.08l-.74.2c-.35.1-.65.4-.7.75l-.1.55c-.03.18-.04.37-.04.56A7 7 0 0012 16a7 7 0 005.12-2.14l-.02-.01-.52-.7a.5.5 0 01.08-.6l1.12-.52c.35-.15.47-.54.26-.88l-.68-1.1c-.21-.35-.6-.45-.95-.23l-2.25 1.4a7 7 0 00-1.35 4.09c0-3.866-3.134-7-7-7zM12 11a3 3 0 100-6 3 3 0 000 6z" fill="#D3D3C9"/><path d="M12 11a3 3 0 100-6 3 3 0 000 6z" stroke="#3d5a41"/><path d="M8 17a4 4 0 018 0" stroke="#3d5a41"/><path d="M9 13a1 1 0 102 0 1 1 0 00-2 0zM13 13a1 1 0 102 0 1 1 0 00-2 0z" stroke="#3d5a41" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+                            , '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#e3c5a8" stroke-width="2"><path d="M12 2C8.134 2 5 5.134 5 9a7 7 0 001.35 4.09l-.49 1.13c-.15.35.05.74.42.85l1.37.4a.5.5 0 01.3-.08l.74-.2c.35-.1.65-.4.7-.75l.1-.55c.03-.18.04-.37.04-.56A7 7 0 0012 16a7 7 0 005.12-2.14l.02.01.52.7a.5.5 0 01-.08.6l-1.12.52c-.35.15-.47.54-.26.88l.68 1.1c.21.35.6.45.95.23l2.25-1.4a7 7 0 001.35-4.09c0-3.866-3.134-7-7-7zM12 11a3 3 0 100-6 3 3 0 000 6z" fill="#D3D3C9"/><path d="M12 11a3 3 0 100-6 3 3 0 000 6z" stroke="#e3c5a8"/><path d="M10 16a2 2 0 10-4 0M14 16a2 2 0 104 0" stroke="#e3c5a8"/></svg>'
+                            , '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#4b3f33" stroke-width="2"><path d="M12 2C8.134 2 5 5.134 5 9a7 7 0 001.35 4.09l-.49 1.13c-.15.35.05.74.42.85l1.37.4a.5.5 0 01.3-.08l.74-.2c.35-.1.65-.4.7-.75l.1-.55c.03-.18.04-.37.04-.56A7 7 0 0012 16a7 7 0 005.12-2.14l.02.01.52.7a.5.5 0 01-.08.6l-1.12.52c-.35.15-.47.54-.26.88l.68 1.1c.21.35.6.45.95.23l2.25-1.4a7 7 0 001.35-4.09c0-3.866-3.134-7-7-7zM12 11a3 3 0 100-6 3 3 0 000 6z" fill="#D3D3C9"/><path d="M12 11a3 3 0 100-6 3 3 0 000 6z" stroke="#4b3f33"/><path d="M10 16a2 2 0 10-4 0M14 16a2 2 0 104 0" stroke="#4b3f33"/></svg>'
+                            , '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#d49463" stroke-width="2"><path d="M12 2C8.134 2 5 5.134 5 9a7 7 0 001.35 4.09l-.49 1.13c-.15.35.05.74.42.85l1.37.4a.5.5 0 01.3-.08l.74-.2c.35-.1.65-.4.7-.75l.1-.55c.03-.18.04-.37.04-.56A7 7 0 0012 16a7 7 0 005.12-2.14l.02.01.52.7a.5.5 0 01-.08.6l-1.12.52c-.35.15-.47.54-.26.88l.68 1.1c.21.35.6.45.95.23l2.25-1.4a7 7 0 001.35-4.09c0-3.866-3.134-7-7-7zM12 11a3 3 0 100-6 3 3 0 000 6z" fill="#D3D3C9"/><path d="M12 11a3 3 0 100-6 3 3 0 000 6z" stroke="#d49463"/><path d="M10 16a2 2 0 10-4 0M14 16a2 2 0 104 0" stroke="#d49463"/></svg>'
+                            ]; function getRandomIcon() { return defaultIcons[Math.floor(Math.random() *
+                            defaultIcons.length)]; } %>
+                            <% dogs.forEach(dog=> { %>
+                                <div
+                                    class="bg-white rounded-3xl shadow-lg overflow-hidden flex flex-col items-center p-6 text-center">
+                                    <% if (dog.imageUrl) { %>
+                                        <img src="<%= dog.imageUrl %>" alt="<%= dog.name %>"
+                                            class="w-full h-48 object-cover rounded-2xl mb-4">
+                                        <% } else { %>
+                                            <div
+                                                class="w-full h-48 bg-[#e3c5a8] flex items-center justify-center rounded-2xl mb-4 p-8">
+                                                <%= getRandomIcon() %>
+                                            </div>
+                                            <% } %>
+                                                <h3 class="text-2xl font-bold text-[#3d5a41]">
+                                                    <%= dog.name %>
+                                                </h3>
+                                                <p class="text-sm text-gray-400 mt-1">Registered by: <%=
+                                                        dog.owner.username %>
+                                                </p>
+                                                <p class="text-gray-600 mt-2 flex-grow">
+                                                    <%= dog.description %>
+                                                </p>
+
+                                                <div class="flex items-center space-x-2 mt-4">
+                                                    <% if (dog.isAdopted) { %>
+                                                        <span
+                                                            class="bg-green-500 text-white font-bold py-2 px-6 rounded-full shadow-lg">Adopted</span>
+                                                        <% } else { %>
+                                                            <!-- Adopt button, only visible if dog is not adopted -->
+                                                            <form action="/adopt-dog/<%= dog._id %>" method="POST">
+                                                                <button type="submit"
+                                                                    class="bg-[#99a65d] hover:bg-[#838e51] text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 transform hover:scale-105">Adopt</button>
+                                                            </form>
+                                                            <% } %>
+
+                                                                <!-- Remove button, only visible to the owner -->
+                                                                <% if (dog.owner._id.toString()===user.userId) { %>
+                                                                    <form action="/remove-dog/<%= dog._id %>"
+                                                                        method="POST">
+                                                                        <button type="submit"
+                                                                            class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 transform hover:scale-105">Remove</button>
+                                                                    </form>
+                                                                    <% } %>
+                                                </div>
+                                </div>
+                                <% }) %>
+                                    <% } else { %>
+                                        <p class="text-center text-gray-500 text-lg col-span-full">No dogs are available
+                                            for adoption at the moment. Check back later!</p>
+                                        <% } %>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer class="w-full py-4 text-center text-sm text-[#696969] bg-white shadow-md mt-8">
+                © 2025 Dog Adoption Platform. Made with care for our furry friends.
+            </footer>
+</body>
+
+</html>
